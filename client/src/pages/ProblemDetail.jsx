@@ -1,0 +1,101 @@
+// @ts-nocheck
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+
+/**
+ * @typedef {Object} Problem
+ * @property {string} id
+ * @property {string} title
+ * @property {string} description
+ * @property {string} [hint]
+ * @property {string} diagram
+ * @property {string} simulationLink
+ */
+
+// Default equipment lists for known problems
+// const equipmentMap = {
+//   "rc-timer": [
+//     "1x 330Ω Resistor",
+//     "1x 1000μF Capacitor",
+//     "1x LED",
+//     "1x Arduino Uno",
+//     "Jumper wires"
+//   ],
+//   "rlc-filter": [
+//     "1x R (Resistor)",
+//     "1x L (Inductor)",
+//     "1x C (Capacitor)",
+//     "1x Arduino Uno",
+//     "Speaker or Buzzer",
+//     "Jumper wires"
+//   ]
+//   // Add more as needed
+// };
+
+function ProblemDetail() {
+  const { id } = useParams();
+  /** @type {[Problem|null, Function]} */
+  const [problem, setProblem] = useState(null);
+
+  useEffect(() => {
+    fetch(`http://localhost:4000/api/problems/${id}`)
+      .then((res) => res.json())
+      .then(setProblem);
+  }, [id]);
+
+  if (!problem) return <div>Loading...</div>;
+
+  const equipment = equipmentMap[problem.id] || ["See problem description for required components."];
+
+  return (
+    <div style={{ padding: 32 }}>
+      <Link to="/">← Back to Problems</Link>
+      <h1>{problem.title}</h1>
+      <img src={problem.diagram} alt={problem.title} style={{ maxWidth: 400, margin: '16px 0' }} />
+      <pre style={{ whiteSpace: "pre-wrap", background: "#222", padding: 16, borderRadius: 8 }}>{problem.description}</pre>
+      {problem.hint && (
+        <details style={{ margin: '16px 0' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Hint</summary>
+          <pre style={{ whiteSpace: "pre-wrap", background: "#333", padding: 12, borderRadius: 6 }}>{problem.hint}</pre>
+        </details>
+      )}
+      <div style={{ margin: '24px 0', background: '#181818', padding: 16, borderRadius: 8 }}>
+        <h2>Required Equipment</h2>
+        <ul>
+          {equipment.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      </div>
+      <div style={{ margin: '24px 0', background: '#222', padding: 16, borderRadius: 8 }}>
+        <strong>Instructions:</strong>
+        <div style={{ marginTop: 8 }}>
+          Build and test your circuit in the embedded simulator below. No code or text submission is required.<br />
+          <span style={{ color: '#aaa' }}>
+            (Optional: You may share your simulation link or a screenshot if asked by an instructor.)
+          </span>
+        </div>
+      </div>
+      {problem.simulationLink && (
+        <div style={{ marginTop: 24 }}>
+          <h2>Simulator</h2>
+          <iframe
+            src={problem.simulationLink}
+            width="800"
+            height="400"
+            title="Circuit Simulator"
+            style={{ border: "1px solid #ccc", background: '#fff' }}
+            allowFullScreen
+          />
+          <div>
+            <a href={problem.simulationLink} target="_blank" rel="noopener noreferrer">
+              Open Simulation in New Tab
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default ProblemDetail;
