@@ -34,7 +34,6 @@ import { useParams, Link } from "react-router-dom";
 
 function ProblemDetail() {
   const { id } = useParams();
-  /** @type {[Problem|null, Function]} */
   const [problem, setProblem] = useState(null);
 
   useEffect(() => {
@@ -43,40 +42,33 @@ function ProblemDetail() {
       .then(setProblem);
   }, [id]);
 
-  if (!problem) return <div>Loading...</div>;
-
-  const equipment = equipmentMap[problem.id] || ["See problem description for required components."];
+  if (!problem) return <div style={{ padding: 32 }}>Loading...</div>;
 
   return (
     <div style={{ padding: 32 }}>
       <Link to="/">← Back to Problems</Link>
-      <h1>{problem.title}</h1>
-      <img src={problem.diagram} alt={problem.title} style={{ maxWidth: 400, margin: '16px 0' }} />
-      <pre style={{ whiteSpace: "pre-wrap", background: "#222", padding: 16, borderRadius: 8 }}>{problem.description}</pre>
+      <h1 style={{ fontSize: 32, fontWeight: 700, margin: '24px 0 12px 0' }}>{problem.title}</h1>
+      {problem.diagram && (
+        <img src={problem.diagram} alt={problem.title} style={{ maxWidth: 400, borderRadius: 12, margin: '16px 0' }} />
+      )}
+      <pre style={{ whiteSpace: "pre-wrap", background: "#222", padding: 16, borderRadius: 8, fontSize: 18 }}>{problem.description}</pre>
       {problem.hint && (
         <details style={{ margin: '16px 0' }}>
           <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Hint</summary>
           <pre style={{ whiteSpace: "pre-wrap", background: "#333", padding: 12, borderRadius: 6 }}>{problem.hint}</pre>
         </details>
       )}
-      <div style={{ margin: '24px 0', background: '#181818', padding: 16, borderRadius: 8 }}>
-        <h2>Required Equipment</h2>
-        <ul>
-          {equipment.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-      </div>
-      <div style={{ margin: '24px 0', background: '#222', padding: 16, borderRadius: 8 }}>
-        <strong>Instructions:</strong>
-        <div style={{ marginTop: 8 }}>
-          Build and test your circuit in the embedded simulator below. No code or text submission is required.<br />
-          <span style={{ color: '#aaa' }}>
-            (Optional: You may share your simulation link or a screenshot if asked by an instructor.)
-          </span>
+      {problem.equipment && (
+        <div style={{ margin: '24px 0', background: '#181818', padding: 16, borderRadius: 8 }}>
+          <h2>Required Equipment</h2>
+          <ul>
+            {problem.equipment.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
         </div>
-      </div>
-      {problem.simulationLink && (
+      )}
+      {problem.simulationLink ? (
         <div style={{ marginTop: 24 }}>
           <h2>Simulator</h2>
           <iframe
@@ -92,6 +84,10 @@ function ProblemDetail() {
               Open Simulation in New Tab
             </a>
           </div>
+        </div>
+      ) : (
+        <div style={{ marginTop: 24, color: '#aaa' }}>
+          <em>No simulator available for this question.</em>
         </div>
       )}
     </div>
